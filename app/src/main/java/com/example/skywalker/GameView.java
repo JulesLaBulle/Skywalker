@@ -37,7 +37,7 @@ public class GameView extends SurfaceView implements Runnable{
             Canvas canvas = holder.lockCanvas();
             canvas.drawColor(Color.BLACK); // Fond noir (espace)
 
-            // Dessiner les éléments du jeu ici...
+
 
             holder.unlockCanvasAndPost(canvas);
         }
