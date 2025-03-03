@@ -1,9 +1,8 @@
 package com.example.skywalker;
-
 import android.app.Activity;
 import android.os.Bundle;
-
 public class GameActivity extends Activity{
+
     private GameView gameView;
 
     @Override
