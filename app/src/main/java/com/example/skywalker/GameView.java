@@ -55,13 +55,14 @@ public class GameView extends SurfaceView implements Runnable {
                 background = Bitmap.createScaledBitmap(background, getWidth(), getHeight(), false);
 
                 // Redimensionner le vaisseau
-                int newWidth = getWidth() / 6;
-                int newHeight = newWidth;
+                int newWidth = getWidth() / 3;
+                int newHeight = getHeight()/9;
                 spaceship = Bitmap.createScaledBitmap(spaceship, newWidth, newHeight, false);
 
-                // Positionner le vaisseau
+                // Positionner le vaisseau au centre de l’écran
                 spaceshipX = getWidth() / 2 - spaceship.getWidth() / 2;
-                spaceshipY = getHeight() - spaceship.getHeight() - 50;
+                spaceshipY = getHeight() / 2 - spaceship.getHeight() / 2;
+
 
                 isInitialized = true; // Empêche de recalculer à chaque frame
             }
