@@ -4,10 +4,14 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Random;
 
 public class GameView extends SurfaceView implements Runnable {
 
@@ -16,21 +20,24 @@ public class GameView extends SurfaceView implements Runnable {
     private SurfaceHolder holder;
     private Paint paint;
 
-    private Bitmap background;
     private Bitmap spaceship;
     private int spaceshipX, spaceshipY;
-    private boolean isInitialized = false; // Permet d'initialiser après la première frame
+    private boolean isInitialized = false;
+
+    private List<Asteroid> asteroids;  // Liste des astéroïdes
+    private Random random;
 
     public GameView(Context context) {
         super(context);
         holder = getHolder();
         paint = new Paint();
 
-        // Charger l’image de fond (on ne redimensionne pas encore)
-        background = BitmapFactory.decodeResource(getResources(), R.drawable.etoilefond);
-
-        // Charger le vaisseau mais sans le redimensionner
+        // Charger le vaisseau
         spaceship = BitmapFactory.decodeResource(getResources(), R.drawable.tie);
+
+        // Initialisation des astéroïdes
+        asteroids = new ArrayList<>();
+        random = new Random();
     }
 
     @Override
@@ -43,7 +50,22 @@ public class GameView extends SurfaceView implements Runnable {
     }
 
     private void update() {
-        // Logique du jeu ici
+        // Ajouter un nouvel astéroïde aléatoirement toutes les X frames
+        if (random.nextInt(100) < 2) {  // Petit pourcentage pour ajouter un astéroïde aléatoirement
+            addAsteroid();
+        }
+
+        // Mettre à jour la position des astéroïdes
+        Iterator<Asteroid> iterator = asteroids.iterator();
+        while (iterator.hasNext()) {
+            Asteroid asteroid = iterator.next();
+            asteroid.move(0, 10);  // Déplacement vers le bas
+
+            // Si l'astéroïde sort de l'écran, on le supprime
+            if (asteroid.getY() > getHeight()) {
+                iterator.remove();
+            }
+        }
     }
 
     private void draw() {
@@ -51,27 +73,23 @@ public class GameView extends SurfaceView implements Runnable {
             Canvas canvas = holder.lockCanvas();
 
             if (!isInitialized) {
-                // Redimensionner le fond
-                background = Bitmap.createScaledBitmap(background, getWidth(), getHeight(), false);
-
-                // Redimensionner le vaisseau
+                // Redimensionner le vaisseau une seule fois
                 int newWidth = getWidth() / 3;
-                int newHeight = getHeight()/9;
+                int newHeight = getHeight() / 9;
                 spaceship = Bitmap.createScaledBitmap(spaceship, newWidth, newHeight, false);
-
-                // Positionner le vaisseau au centre de l’écran
                 spaceshipX = getWidth() / 2 - spaceship.getWidth() / 2;
                 spaceshipY = getHeight() / 2 - spaceship.getHeight() / 2;
 
-
-                isInitialized = true; // Empêche de recalculer à chaque frame
+                isInitialized = true;
             }
-
-            // Dessiner l’arrière-plan
-            canvas.drawBitmap(background, 0, 0, paint);
 
             // Dessiner le vaisseau
             canvas.drawBitmap(spaceship, spaceshipX, spaceshipY, paint);
+
+            // Dessiner les astéroïdes
+            for (Asteroid asteroid : asteroids) {
+                asteroid.draw(canvas, paint);
+            }
 
             holder.unlockCanvasAndPost(canvas);
         }
@@ -79,10 +97,20 @@ public class GameView extends SurfaceView implements Runnable {
 
     private void sleep() {
         try {
-            Thread.sleep(16);
+            Thread.sleep(16);  // Environ 60 FPS
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    // Méthode pour ajouter un nouvel astéroïde
+    private void addAsteroid() {
+        Asteroid asteroid = new Asteroid(getContext(), new FrameLayout(getContext()));
+        // Positionner l'astéroïde au sommet de l'écran, à une position X aléatoire
+        int xPosition = random.nextInt(getWidth() - 100);  // Moins 100 pour éviter de dépasser l'écran
+        asteroid.setPosition(xPosition, -200);  // On positionne l'astéroïde hors de l'écran, en haut
+        asteroid.setSize(100, 100);  // Définir une taille fixe ou variable selon les besoins
+        asteroids.add(asteroid);
     }
 
     public void resume() {
